@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pricing Calculator</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --text: #14171f; --muted: #5f6675;
+    --line: #e3e6ec; --accent: #4f46e5; --accent-soft: #eef0ff; --good: #0f9d58;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115; --card: #181b22; --text: #eef0f4; --muted: #9aa2b1;
+      --line: #292e39; --accent: #8b87ff; --accent-soft: #23253f; --good: #4cd08a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 32px 16px 56px; }
+  h1 { font-size: clamp(1.6rem, 5vw, 2.2rem); margin: 0 0 4px; letter-spacing: -.02em; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .inputs { display: grid; gap: 20px; margin-bottom: 20px; }
+  @media (min-width: 640px) { .inputs { grid-template-columns: 1fr 1fr; } }
+  label, .lbl { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+  .row { display: flex; align-items: center; gap: 12px; }
+  input[type=number] {
+    width: 110px; padding: 8px 10px; font: inherit; color: var(--text);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+  }
+  input[type=range] { flex: 1; accent-color: var(--accent); min-width: 0; }
+  input:focus-visible, .switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .hint { color: var(--muted); font-size: .8rem; margin-top: 4px; }
+
+  .billing {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    margin: 8px 0 20px; flex-wrap: wrap;
+  }
+  .billing span { font-weight: 600; color: var(--muted); }
+  .billing span.on { color: var(--text); }
+  .switch {
+    position: relative; width: 52px; height: 30px; border: 0; padding: 0; cursor: pointer;
+    background: var(--line); border-radius: 99px; transition: background .2s;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+    background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px #0003;
+  }
+  .switch[aria-checked=true] { background: var(--accent); }
+  .switch[aria-checked=true]::after { transform: translateX(22px); }
+  .badge {
+    background: var(--accent-soft); color: var(--accent); font-size: .75rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 99px;
+  }
+
+  .plans { display: grid; gap: 16px; }
+  @media (min-width: 640px) { .plans { grid-template-columns: 1fr 1fr; } }
+  .plan h2 { margin: 0; font-size: 1.1rem; }
+  .plan .rate { color: var(--muted); font-size: .85rem; }
+  .price { font-size: 2.2rem; font-weight: 750; letter-spacing: -.02em; margin: 12px 0 0; }
+  .price small { font-size: .9rem; font-weight: 500; color: var(--muted); }
+  .old { color: var(--muted); text-decoration: line-through; font-size: .9rem; min-height: 1.4em; }
+  .stats { margin: 14px 0 0; padding: 14px 0 0; border-top: 1px solid var(--line); display: grid; gap: 6px; }
+  .stats div { display: flex; justify-content: space-between; gap: 12px; font-size: .92rem; }
+  .stats dt { color: var(--muted); }
+  .stats dd { margin: 0; font-weight: 650; text-align: right; }
+  .pos { color: var(--good); }
+  .neg { color: #d93025; }
+  .note { color: var(--muted); font-size: .8rem; margin-top: 20px; text-align: center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pricing calculator</h1>
+  <p class="sub">Estimate your cost and return. Everything updates as you type.</p>
+
+  <section class="card inputs" aria-label="Inputs">
+    <div>
+      <label for="users">Number of users</label>
+      <div class="row">
+        <input id="usersRange" type="range" min="1" max="100000" step="1" value="1000" aria-label="Users slider">
+        <input id="users" type="number" min="1" max="1000000" value="1000" inputmode="numeric">
+      </div>
+    </div>
+    <div>
+      <label for="hours">Hours saved per user / month</label>
+      <div class="row">
+        <input id="hoursRange" type="range" min="0" max="40" step="0.5" value="2" aria-label="Hours saved slider">
+        <input id="hours" type="number" min="0" max="160" step="0.5" value="2" inputmode="decimal">
+      </div>
+    </div>
+    <div>
+      <label for="rate">Average hourly cost ($)</label>
+      <div class="row">
+        <input id="rateRange" type="range" min="5" max="200" step="1" value="40" aria-label="Hourly cost slider">
+        <input id="rate" type="number" min="0" max="1000" value="40" inputmode="decimal">
+      </div>
+      <div class="hint">Fully loaded cost of one hour of a user's time.</div>
+    </div>
+  </section>
+
+  <div class="billing">
+    <span id="lblMonthly" class="on">Monthly</span>
+    <button id="toggle" class="switch" role="switch" aria-checked="false" aria-label="Annual billing"></button>
+    <span id="lblAnnual">Annual</span>
+    <span class="badge">Save 15%</span>
+  </div>
+
+  <section class="plans" id="plans" aria-live="polite"></section>
+
+  <p class="note">Prices are per user per month. Annual billing is charged up front with 15% off.
+    ROI = (value of time saved − plan cost) ÷ plan cost.</p>
+</main>
+
+<script>
+(() => {
+  const PLANS = [
+    { id: "standard",   name: "Standard",   rate: 0.10 },
+    { id: "enterprise", name: "Enterprise", rate: 0.12 },
+  ];
+  const DISCOUNT = 0.15;
+
+  const $ = id => document.getElementById(id);
+  const state = { users: 1000, hours: 2, wage: 40, annual: false };
+
+  const usd = n => new Intl.NumberFormat("en-US", {
+    style: "currency", currency: "USD",
+    minimumFractionDigits: Math.abs(n) < 100 ? 2 : 0,
+    maximumFractionDigits: Math.abs(n) < 100 ? 2 : 0,
+  }).format(n);
+  const pct = n => new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n) + "%";
+
+  // Keep a number input and its slider in sync; sanitize bad input.
+  function bind(key, numId, rangeId, min, max) {
+    const num = $(numId), range = $(rangeId);
+    const set = (raw, fromNum) => {
+      let v = parseFloat(raw);
+      if (!isFinite(v)) v = 0;
+      v = Math.min(max, Math.max(min, v));
+      state[key] = v;
+      if (!fromNum) num.value = v;
+      range.value = v;
+      render();
+    };
+    num.addEventListener("input", () => {
+      // Allow empty while typing; treat as 0 for calculation.
+      set(num.value === "" ? min : num.value, true);
+    });
+    num.addEventListener("blur", () => { num.value = state[key]; });
+    range.addEventListener("input", () => set(range.value, false));
+  }
+
+  function render() {
+    const mult = state.annual ? 1 - DISCOUNT : 1;
+    const value = state.users * state.hours * state.wage; // monthly value of time saved
+
+    $("plans").innerHTML = PLANS.map(p => {
+      const monthly = state.users * p.rate * mult;
+      const list = state.users * p.rate;
+      const net = value - monthly;
+      const roi = monthly > 0 ? (net / monthly) * 100 : 0;
+      const yearly = monthly * 12;
+      return `
+      <article class="card plan">
+        <h2>${p.name}</h2>
+        <div class="rate">$${(p.rate * mult).toFixed(3).replace(/0$/, "")} per user / month</div>
+        <div class="price">${usd(monthly)}<small> / month</small></div>
+        <div class="old">${state.annual ? usd(list) + " / month" : ""}</div>
+        <dl class="stats">
+          <div><dt>Billed ${state.annual ? "annually" : "per year"}</dt><dd>${usd(yearly)}</dd></div>
+          <div><dt>Time-saved value / month</dt><dd>${usd(value)}</dd></div>
+          <div><dt>Net benefit / month</dt><dd class="${net >= 0 ? "pos" : "neg"}">${usd(net)}</dd></div>
+          <div><dt>Estimated ROI</dt><dd class="${roi >= 0 ? "pos" : "neg"}">${pct(roi)}</dd></div>
+        </dl>
+      </article>`;
+    }).join("");
+  }
+
+  const toggle = $("toggle");
+  toggle.addEventListener("click", () => {
+    state.annual = !state.annual;
+    toggle.setAttribute("aria-checked", state.annual);
+    $("lblAnnual").classList.toggle("on", state.annual);
+    $("lblMonthly").classList.toggle("on", !state.annual);
+    render();
+  });
+
+  bind("users", "users", "usersRange", 1, 1000000);
+  bind("hours", "hours", "hoursRange", 0, 160);
+  bind("wage", "rate", "rateRange", 0, 1000);
+  render();
+})();
+</script>
+</body>
+</html>
